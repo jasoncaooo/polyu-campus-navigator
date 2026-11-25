@@ -183,7 +183,7 @@ things standing inside it.
 
 ## Team project and provenance
 
-Portfolio snapshot of the COMP4431 Group 21 project. Original team repository: https://github.com/cy-katryn/CampusNavigator . This is a collaborative project; this repository does not imply sole authorship. 
+Portfolio snapshot of the COMP4431 Group 21 project. Original team repository: https://github.com/cy-katryn/CampusNavigator . This is a collaborative project; this repository does not imply sole authorship.
 
 ### Personal contributions — CAO Wei
 

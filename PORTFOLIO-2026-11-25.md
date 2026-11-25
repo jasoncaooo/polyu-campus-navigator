@@ -1,3 +1,5 @@
+> Archived first draft. Current confirmed contributions: [2026-11-25 v2](PORTFOLIO-2026-11-25-v2.md).
+
 # PolyU Campus Navigator — portfolio overview
 
 A team-built multilingual campus navigation assistant combining a React/TypeScript interface with a Python routing and dialogue engine.
