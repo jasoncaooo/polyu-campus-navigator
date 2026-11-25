@@ -183,7 +183,16 @@ things standing inside it.
 
 ## Team project and provenance
 
-Portfolio snapshot of the COMP4431 Group 21 project. Original team repository: https://github.com/cy-katryn/CampusNavigator . This is a collaborative project; this repository does not imply sole authorship. Personal responsibilities have not yet been documented.
+Portfolio snapshot of the COMP4431 Group 21 project. Original team repository: https://github.com/cy-katryn/CampusNavigator . This is a collaborative project; this repository does not imply sole authorship. 
+
+### Personal contributions — CAO Wei
+
+- Developed speech-to-text (STT) and text-to-speech (TTS) features, enabling voice input and spoken responses in the campus navigation assistant.
+- Created the project presentation slides and delivered the project presentation.
+
+The routing engine and broader AI system are team project features; the personal contributions listed above describe my own role.
+
+Resume wording: [Portfolio and resume description](PORTFOLIO-2026-11-25-v2.md).
 
 ## What it does
 
