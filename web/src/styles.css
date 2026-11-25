@@ -1,0 +1,335 @@
+/* PolyU Campus Navigator - stylesheet.
+ *
+ * Tailwind owns the interface: every component in src/components is styled with
+ * utilities, and the palette these utilities point at lives in the block below (and
+ * in tailwind.config.js, which maps those variables to colour names).
+ *
+ * What stays here as real CSS is what a utility cannot express:
+ *   - the palette itself and the page ground
+ *   - the campus guide: a transparent illustration with subtle state animations
+ *   - the map layers: the drawing code creates elements by class name (.fp-wall,
+ *     .edge, .node.facility, .route-line ...), so those rules are the contract between
+ *     CampusMap and the picture
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===================================================================== palette
+   PolyU brand colours, sampled from PolyU GenAI website.
+
+   EVERY colour in this file is a var() pointing at one of these names.
+   Change a value here and the whole application follows -- including the
+   campus map. The campus guide illustration keeps its original artwork colours.
+   ========================================================================= */
+:root {
+  /* -- PolyU brand -- */
+  --polyu-red:        #a02338;
+  --polyu-red-dark:   #892c3e;
+  --polyu-red-tint:   #f9eef0;
+
+  /* -- surfaces -- */
+  --bg:               #f4efef;
+  --bg-glow:          #f0dfe2;
+  --panel:            #ffffff;
+  --panel-2:          #f8f2f3;
+  --panel-glass:      rgba(255, 255, 255, .92);
+  --line:             #e8dcdd;
+  --line-strong:      #cdb4b9;
+
+  /* -- text -- */
+  --text:             #2a1f22;
+  --muted:            #7d6b70;
+  --on-accent:        #ffffff;
+  --on-accent-dim:    rgba(255, 255, 255, .72);
+
+  /* -- accent (everything "brand coloured" reads from here) -- */
+  --accent:           var(--polyu-red);
+  --accent-dark:      var(--polyu-red-dark);
+  --accent-soft:      var(--polyu-red-tint);
+  --accent-ring:      rgba(166, 53, 71, .25);
+
+  /* -- semantic -- */
+  --ok:               #1c7a54;
+  --ok-line:          #b7e0cf;
+  --warn:             #9a6410;
+  --warn-line:        #ecd7ae;
+  --danger:           #b3261e;
+  --danger-soft:      #fdeceb;
+
+  /* -- facility categories (legend + map pins) -- */
+  /* One colour per legend chip. The chips are the campus map's own categories, and
+     under Amenities its amenity subtypes, so this list mirrors that taxonomy. */
+  --cat-buildings:                #8c2f3d;   /* PolyU red, the blocks themselves */
+  --cat-locations:                #0e7490;   /* cyan, the open spaces         */
+  --cat-faculties:                #7c3aed;   /* violet                        */
+  --cat-offices:                  #4f46e5;   /* indigo                        */
+  --cat-transport:                #475569;   /* slate                         */
+  --cat-amenity-lecture-theatre:  #a16207;   /* brown                         */
+  --cat-amenity-aed:              #b3261e;   /* red                           */
+  --cat-amenity-water:            #2b6cb0;   /* blue                          */
+  --cat-amenity-toilet:           #0f766e;   /* teal                          */
+  --cat-amenity-accessible-toilet:#0d9488;   /* lighter teal                  */
+  --cat-amenity-catering:         #b45309;   /* amber                         */
+  --cat-amenity-clinic:           #6b5b95;   /* purple                        */
+  --cat-amenity-lactation:        #be185d;   /* pink                          */
+  --cat-amenity-prayer:           #2f8f6b;   /* green                         */
+  --cat-amenity-other:            #94a3b8;   /* grey                          */
+
+  /* -- the route -------------------------------------------------------------
+     Not the brand red: the building walls are rust (109, 48, 16), so a red line
+     disappears into the model. Navy is the one hue that appears nowhere else on the
+     map -- walls are rust, roofs grey, water pale blue, lawns green -- and it reads as
+     "this is the way" without shouting.
+
+     Four hues for up to four ways there, in order: navy (shortest), teal, amber,
+     purple. Each keeps the white casing, so all of them read over roofs and lawns. */
+  --route-1:          #173a7a;
+  --route-2:          #0f766e;
+  --route-3:          #b45309;
+  --route-4:          #6b5b95;
+  --route-casing:     #ffffff;
+  --route-pin:        #0d2148;   /* the solid centre of each stop */
+
+  /* -- campus map -- */
+  --map-bg:           #f2efe9;   /* warm land, like a real basemap */
+  --edge:             #ffffff;   /* roads read white against the land */
+  --edge-casing:      #dcd7cd;
+  --edge-stairs:      #a8977f;   /* the rungs that mark a flight of steps */
+  --node:             #e6dfd4;
+  --node-line:        #c7bfb1;
+
+  /* -- basemap treatment ------------------------------------------------------
+     The tiles are desaturated so the overlay is the only thing in colour. One
+     value to tune: 1 = fully grey, 0 = the original colour map. */
+  --basemap-grey:     grayscale(1) contrast(.92) brightness(1.12);
+
+  /* -- illustrated buildings: the 2.5D extrusion -----------------------------
+     One material for the whole campus -- PolyU red walls, grey roofs -- so the
+     drawing reads as a single model rather than a patchwork. Depth comes from the
+     paint order, never from per-building colour. */
+  --fp-roof:          #d6d2cc;
+  --fp-roof-line:     #b9b4ad;
+  --fp-roof-inner:    #c4bfb8;   /* the parapet ring, inset on the roof */
+  --fp-wall:          #a02338;   /* rgb(109, 48, 16) -- the face lit by the sun */
+  --fp-wall-dark:     #861225;   /* the face turned away from it */
+  --fp-height:        20;        /* metres of extrusion at full scale */
+
+  /* The one exception: a block in the file may ask for "tone": "grey". Grey rather
+     than white, because a white block on a near-white basemap disappears. */
+  --fp-grey-line:     #686663;
+  --fp-grey-roof:     #dcd9d5;
+  --fp-grey-inner:    #cfccc7;
+  --fp-grey-wall:     #b3b0ad;
+  --fp-grey-wall-dark: #a6a29c;
+
+  --fp-bridge:        #d9d2c6;   /* covered walkways / bridges -- flat */
+  --fp-water:         #a8cbe4;   /* pools, ponds -- drawn flat */
+  --fp-plaza:         #e7dfd2;   /* paved squares -- walked on, not built */
+  --fp-green:         #cfe0c2;   /* lawns, courts -- drawn flat */
+
+
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: radial-gradient(1200px 700px at 15% -10%, var(--bg-glow), transparent), var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+}
+/* The approved full-body illustration: contain, never crop its map or pointing hand. */
+.campus-guide {
+  flex: 0 0 104px;
+  height: 136px;
+  display: grid;
+  place-items: center;
+}
+.campus-guide-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  transform-origin: 50% 90%;
+}
+.campus-guide.listening .campus-guide-image { animation: guide-listen 1.8s ease-in-out infinite; }
+.campus-guide.thinking .campus-guide-image { animation: guide-think 2.4s ease-in-out infinite; }
+.campus-guide.speaking .campus-guide-image { animation: guide-speak .9s ease-in-out infinite; }
+@keyframes guide-listen { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-3deg); } }
+@keyframes guide-think { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+@keyframes guide-speak { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@media (max-width: 420px) {
+  .campus-guide { flex-basis: 76px; height: 110px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .campus-guide-image { animation: none !important; }
+}
+
+/* --------------------------------------------------------------- basemap layer
+   With real tiles underneath, our own diagram steps back: the network reads as a
+   thin grey overlay, and the fake shadows/trees disappear because the map already
+   has its own. */
+.tile { pointer-events: none; filter: var(--basemap-grey); }
+
+/* ------------------------------------------------------- extruded footprints
+   Three flat tones are all the illustration trick needs: a lit roof, a wall in
+   shade, and a wall in deeper shade. Depth comes from the sort order, not from
+   shading maths. */
+.fp-wall      { fill: var(--fp-wall); stroke: none; }
+.fp-wall-dark { fill: var(--fp-wall-dark); stroke: none; }
+.fp-roof      { fill: var(--fp-roof); stroke: var(--fp-roof-line); stroke-width: .8; }
+
+/* zone tints: roofs take the zone colour, walls a darker wash of it */
+.fp-flat     { stroke: none; opacity: .9; }
+.fp-flat-water { fill: var(--fp-water); }
+.fp-flat-plaza { fill: var(--fp-plaza); stroke: var(--line-strong); stroke-width: .8;
+                 stroke-dasharray: 6 4; }
+.fp-flat-bridge { fill: var(--fp-bridge); stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 4 3; }
+
+/* a drawn path is a line, never a block */
+.fp-path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.fp-path-path   { stroke: var(--edge-casing); stroke-width: 1.2; }
+.fp-path-bridge {
+  stroke: var(--line-strong); stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.fp-flat-green { fill: var(--fp-green); }
+.fp-flat-pitch { fill: var(--fp-green); stroke: var(--panel); stroke-width: 1; }
+.fp-shadow   { fill: #2f2a2f; opacity: .16; }
+.fp-roof-inner { stroke: none; opacity: .55; fill: var(--fp-roof-inner); }
+
+/* "tone": "grey" in the file -- the block is drawn grey instead of red.
+   Set once, on the buildings that deserve to stand apart. */
+.tone-grey.fp-wall      { fill: var(--fp-grey-wall); }
+.tone-grey.fp-wall-dark { fill: var(--fp-grey-wall-dark); }
+.tone-grey.fp-roof      { fill: var(--fp-grey-roof); stroke: var(--fp-grey-line); }
+.tone-grey.fp-roof-inner { fill: var(--fp-grey-inner); opacity: 1; }
+
+/* over the street map, the blocks are slightly translucent so the map reads through */
+#map.basemap #layer-footprints { opacity: .92; }
+#map.basemap .fp-roof { stroke: var(--panel); stroke-width: 1.1; }
+
+/* with extruded blocks on screen, the schematic squares step aside */
+.roof-code {
+  fill: var(--polyu-red-dark); font-size: 11px; font-weight: 700;
+  font-family: var(--font); text-anchor: middle; pointer-events: none;
+  paint-order: stroke; stroke: var(--panel); stroke-width: 2.4;
+  stroke-linejoin: round;
+}
+#map.basemap .edge-casing { stroke: var(--panel); opacity: .75; stroke-width: 2.6; }
+#map.basemap .edge { stroke: var(--muted); opacity: .55; stroke-width: 1.1; }
+#map.basemap .edge-stairs { stroke: var(--accent); opacity: .7; }
+#map.basemap .node.facility circle { stroke: var(--panel); }
+#map.basemap .node-label { stroke: var(--panel); stroke-width: 3.2; }
+
+/* only visible while a route is on the map, in the route colour */
+#map { width: 100%; height: 100%; display: block; cursor: grab; }
+#map.dragging { cursor: grabbing; }
+
+/* the walkway network is scaffolding, not map furniture: hidden unless asked for */
+#map.no-links #layer-edges { display: none; }
+
+.edge-casing {
+  stroke: var(--edge-casing); stroke-width: 3.5; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.edge {
+  stroke: var(--edge); stroke-width: 1.5; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+/* a flight of steps: rungs across the link, so it cannot be mistaken for a slope */
+.edge-stairs {
+  stroke: var(--edge-stairs); stroke-width: 1.1;
+  stroke-linecap: butt;
+}
+/* A cheap 2.5D hint lives in the footprint layer (fp-roof); these are the schematic
+   pins that appear on top of it. A node's kind is place or facility -- the blocks
+   themselves are footprints, and there are no doorway nodes. */
+.node { cursor: pointer; }
+/* "Main Locations" (Alumni Atrium, Amenities Centre, Campus Control Centre ...): an
+   outlined block, not a filled one. Without this rule the rect had no fill at all and
+   SVG paints an unstyled rect black. */
+.node.place rect {
+  fill: var(--panel); stroke: var(--accent);
+  stroke-width: 1.4;
+}
+/* A destination is outlined in its own category colour, so the chip in the legend and
+   the shape on the map are visibly the same thing. */
+.node.place.cat-buildings rect { stroke: var(--cat-buildings); stroke-width: 1.8; }
+.node.place.cat-locations rect { stroke: var(--cat-locations); stroke-width: 1.8; }
+.node.place.cat-faculties rect { stroke: var(--cat-faculties); stroke-width: 1.8; }
+.node.place.cat-offices rect   { stroke: var(--cat-offices); stroke-width: 1.8; }
+.node.place.cat-transport rect { stroke: var(--cat-transport); stroke-width: 1.8; }
+.node.place.cat-amenity-other rect { stroke: var(--cat-amenity-other); stroke-width: 1.8; }
+.node.facility circle {
+  fill: var(--accent); stroke: var(--on-accent);
+  stroke-width: 1.2;
+}
+.node.facility.cat-buildings circle                { fill: var(--cat-buildings); }
+.node.facility.cat-locations circle                { fill: var(--cat-locations); }
+.node.facility.cat-faculties circle                { fill: var(--cat-faculties); }
+.node.facility.cat-offices circle                  { fill: var(--cat-offices); }
+.node.facility.cat-transport circle                { fill: var(--cat-transport); }
+.node.facility.cat-amenity-lecture-theatre circle  { fill: var(--cat-amenity-lecture-theatre); }
+.node.facility.cat-amenity-aed circle              { fill: var(--cat-amenity-aed); }
+.node.facility.cat-amenity-water circle            { fill: var(--cat-amenity-water); }
+.node.facility.cat-amenity-toilet circle           { fill: var(--cat-amenity-toilet); }
+.node.facility.cat-amenity-accessible-toilet circle{ fill: var(--cat-amenity-accessible-toilet); }
+.node.facility.cat-amenity-catering circle         { fill: var(--cat-amenity-catering); }
+.node.facility.cat-amenity-clinic circle           { fill: var(--cat-amenity-clinic); }
+.node.facility.cat-amenity-lactation circle        { fill: var(--cat-amenity-lactation); }
+.node.facility.cat-amenity-prayer circle           { fill: var(--cat-amenity-prayer); }
+.node.facility.cat-amenity-other circle            { fill: var(--cat-amenity-other); }
+/* Two classes deep: as one class it lost the cascade to .node-label (same specificity,
+   declared later), so landmark names were drawn at 11px in a street-name weight. */
+.node-label.route-landmark {
+  fill: var(--ink); font-size: 9px; opacity: .95; letter-spacing: .01em;
+  stroke: var(--map-bg); stroke-width: 2.4;
+}
+.route-landmark-dot { fill: var(--route-1); stroke: var(--route-casing); stroke-width: 1.2; }
+/* Published by PolyU, but no mapped walkway reaches it. */
+.off-network-ring { fill: none; stroke: var(--muted); stroke-width: .9; stroke-dasharray: 2 1.6; }
+.off-network rect, .off-network circle { opacity: .6; }
+.node.dim { display: none; }
+.node:hover rect, .node:hover circle { fill: var(--accent); }
+.node-label {
+  fill: var(--muted); font-size: 11px; font-family: var(--font);
+  paint-order: stroke; stroke: var(--map-bg); stroke-width: 3;
+  pointer-events: none;
+}
+/* the white casing underneath is what makes a route read on any background */
+.route-casing {
+  stroke: var(--route-casing); stroke-width: 5; fill: none;
+  stroke-linecap: round; stroke-linejoin: round; opacity: .92;
+}
+.route-line {
+  stroke: var(--route-1); stroke-width: 2.5; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.route-dot {
+  fill: var(--route-casing); stroke: var(--route-1);
+  stroke-width: 2;
+}
+.route-pin { fill: var(--route-pin); }
+.fac-pin { fill: none; stroke: var(--warn); stroke-width: 3; }
+.fac-pin.pulse { animation: facPulse 1.6s infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes facPulse { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+
+/* ------------------------------------------------------------------ details
+   The summary arrow and the marker suppression are pseudo-elements: no utility
+   reaches ::-webkit-details-marker. */
+.summary { list-style: none; cursor: pointer; }
+.summary::-webkit-details-marker { display: none; }
+.summary::before { content: '▸ '; }
+details[open] > .summary::before { content: '▾ '; }
+
+/* the microphone's recording halo: a keyframe, so it is named rather than spelled
+   inside a utility */
+@keyframes pulseRing {
+  50% { box-shadow: 0 0 0 6px var(--accent-ring); }
+}

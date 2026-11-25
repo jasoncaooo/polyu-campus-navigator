@@ -1,0 +1,8 @@
+# Normalise line endings in the repository, so a teammate on macOS, Linux or Windows
+# gets the same bytes. core.autocrlf stays a per-machine setting; this file decides
+# what is stored.
+* text=auto
+
+# Data files are text and diff badly; keep them out of diffs nobody reads.
+*.geojson -diff
+*.osm     -diff

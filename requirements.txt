@@ -1,0 +1,18 @@
+# The core package is deliberately dependency-free (Python 3.10+ standard library only).
+# You do NOT need to install anything to run the app: every layer has a deterministic
+# fallback, so an empty .env still routes, lists facilities and quotes opening hours.
+#
+# --- web UI: nothing to install at run time --------------------------------
+# The server (campus_nav/web.py) is built on http.server from the standard library and
+# serves a pre-built bundle from campus_nav/static/. The bundle's source lives in web/
+# (React 18 + TypeScript + Tailwind, built by Vite) and is only needed to change it.
+# If you ever swap the server for FastAPI, this is where that dependency would go:
+# fastapi>=0.110
+# uvicorn>=0.27
+
+# --- optional: the fact knowledge base, if you want its ranking library ---------
+# rank-bm25>=0.2.2
+#
+# Place-name matching does NOT need a package: campus_nav/embeddings.py and
+# campus_nav/pinecone.py speak HTTP with urllib, to an OpenAI-compatible
+# /embeddings endpoint and to Pinecone's REST API.

@@ -1,0 +1,40 @@
+# --- secrets -------------------------------------------------------------
+.env
+*.key
+secrets.json
+
+# --- python --------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+# pytest writes its state into the rootdir, and a pytest-cache-files-* directory when
+# that fails. Neither belongs in the repository.
+.pytest_cache/
+pytest-cache-files-*/
+
+# --- runtime artefacts ---------------------------------------------------
+logs/
+*.log
+cache/
+llm_cache.json
+.voice/
+
+# --- node ----------------------------------------------------------------
+web/node_modules/
+
+# --- os / editor ---------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# scratch: editor/session temp files and hand-made backups
+.tmp/
+.tmp_*
+*.bak
+*.orig
+
+# archived out-of-scope work
+_archive_hk_wide/
